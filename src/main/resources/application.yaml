@@ -1,3 +1,36 @@
 spring:
   application:
     name: rewardcraft
+
+  # ── Virtual Thread (Java 21) ─────────────────────────────────────────────
+  # 플랫폼 스레드 대신 가상 스레드를 Tomcat 요청 처리에 사용
+  # I/O 대기가 많은 웹 서버 환경에서 처리량이 크게 향상됨 (Ch 06에서 상세 학습)
+  threads:
+    virtual:
+      enabled: true
+
+  # ── DataSource ───────────────────────────────────────────────────────────
+  datasource:
+    url: jdbc:postgresql://localhost:5432/rewardcraft   # docker-compose.yml의 POSTGRES_DB와 일치
+    username: rc_user                                   # docker-compose.yml의 POSTGRES_USER와 일치
+    password: rc_pass                                   # docker-compose.yml의 POSTGRES_PASSWORD와 일치
+    driver-class-name: org.postgresql.Driver
+
+  # ── JPA ──────────────────────────────────────────────────────────────────
+  jpa:
+    hibernate:
+      # create     : 앱 시작 시 기존 테이블 DROP 후 재생성 → 개발 초기에만 사용
+      # update     : 엔티티 변경분만 반영 (컬럼 삭제는 안 됨) → 위험, 실무에서 비추천
+      # validate   : 엔티티와 실제 스키마가 일치하는지만 검증, DB는 건드리지 않음
+      # none       : 아무것도 하지 않음 → 운영 환경 (Flyway/Liquibase로 직접 관리)
+      ddl-auto: create   # ← 스키마가 안정화되면 validate 로 변경할 것
+    show-sql: true       # 실행되는 SQL을 콘솔에 출력 (개발 시 N+1 문제 파악에 유용)
+    properties:
+      hibernate:
+        format_sql: true   # show-sql 출력을 들여쓰기 포맷으로 정렬
+    open-in-view: false    # 반드시 false로 설정할 것을 권장.
+
+
+  # Redis     → 추후 추가 예정
+  # Kafka     → 추후 추가 예정
+  # OAuth2    → 추후 추가 예정

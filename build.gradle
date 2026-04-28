@@ -92,14 +92,14 @@ dependencyManagement {
 
 // QueryDSL Q클래스 생성 경로 설정
 // @Entity 클래스를 분석해 QUser, QChallenge 같은 타입-세이프 쿼리 클래스를 자동 생성
-def querydslDir = layout.buildDirectory.dir("generated/querydsl").get().asFile
+def querydslDir = layout.buildDirectory.dir("generated/querydsl")
 
 sourceSets {
     main.java.srcDirs += [querydslDir]
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.annotationProcessorGeneratedSourcesDirectory = querydslDir
+    options.generatedSourceOutputDirectory.set(querydslDir)
 }
 
 tasks.named('test') {
