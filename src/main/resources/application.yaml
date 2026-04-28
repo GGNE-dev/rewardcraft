@@ -11,7 +11,7 @@ spring:
 
   # ── DataSource ───────────────────────────────────────────────────────────
   datasource:
-    url: jdbc:postgresql://localhost:5432/rewardcraft   # docker-compose.yml의 POSTGRES_DB와 일치
+    url: jdbc:postgresql://localhost:5433/rewardcraft   # docker-compose.yml 호스트 포트(5433)와 일치
     username: rc_user                                   # docker-compose.yml의 POSTGRES_USER와 일치
     password: rc_pass                                   # docker-compose.yml의 POSTGRES_PASSWORD와 일치
     driver-class-name: org.postgresql.Driver
