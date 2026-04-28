@@ -35,3 +35,19 @@ out/
 
 ### VS Code ###
 .vscode/
+/docs/00-1_Project_Setup.md
+/docs/00_INDEX.md
+/docs/01_JPA_QueryDSL.md
+/docs/02_Spring_Security_OAuth2_JWT.md
+/docs/03_Security_Advanced.md
+/docs/04_Redis.md
+/docs/05_Kafka.md
+/docs/06_MSA_VirtualThread.md
+/docs/07_Frontend_Main.md
+/docs/07B_Ranking_Dashboard.md
+/docs/07CD_Reward_Admin.md
+/docs/08_Observability.md
+/docs/09_Elasticsearch.md
+/docs/10_SQL_Tuning.md
+/docs/11_CICD_AWS.md
+/CLAUDE.md
