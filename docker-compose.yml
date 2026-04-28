@@ -1,0 +1,26 @@
+services:
+
+  # ── PostgreSQL ────────────────────────────────────────────────────────────
+  # Ch 00-1~ : 메인 데이터베이스
+  postgres:
+    image: postgres:16-alpine          # alpine: 경량 리눅스 베이스 이미지 (용량 최소화)
+    container_name: rc-postgres        # 컨테이너 이름 고정 (docker logs rc-postgres 등에서 사용)
+    ports:
+      - "5433:5432"                    # 호스트:컨테이너 포트 포워딩. 로컬 5432(PostgreSQL 기본 포트)가 이미 사용 중이므로 5433 사용
+    environment:
+      POSTGRES_DB: rewardcraft         # 자동 생성할 데이터베이스 이름
+      POSTGRES_USER: rc_user           # 슈퍼유저 계정 (application.yaml의 datasource.username과 일치해야 함)
+      POSTGRES_PASSWORD: rc_pass       # 비밀번호 (application.yaml의 datasource.password와 일치해야 함)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # 컨테이너 재시작 후에도 데이터 유지 (named volume)
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U rc_user -d rewardcraft" ]  # DB가 실제로 연결 가능한지 확인
+      interval: 10s   # 10초마다 체크
+      timeout: 5s     # 5초 안에 응답 없으면 실패로 간주
+      retries: 5      # 5번 연속 실패 시 unhealthy 상태로 전환
+
+  # Redis     → Ch 03 캐싱 / Sorted Set 랭킹 / 분산 락 시작 시 추가 예정
+  # Kafka     → Ch 05 이벤트 드리븐 시작 시 추가 예정
+
+volumes:
+  postgres_data:    # 도커가 관리하는 named volume. 컨테이너 삭제 후 재생성해도 데이터 보존

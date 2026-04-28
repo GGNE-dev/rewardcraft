@@ -42,12 +42,12 @@ dependencies {
 
     // ── Redis ─────────────────────────────────────────────────────────────────
     // Ch 03~04: 캐싱(Cache-Aside), Sorted Set 랭킹, 분산 락
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'  // Lettuce 클라이언트 포함
-    implementation 'org.redisson:redisson-spring-boot-starter:3.32.0'         // 분산 락(RLock) 전용 Redisson
+    // implementation 'org.springframework.boot:spring-boot-starter-data-redis'  // Lettuce 클라이언트 포함
+    // implementation 'org.redisson:redisson-spring-boot-starter:3.32.0'         // 분산 락(RLock) 전용 Redisson
 
     // ── Kafka ─────────────────────────────────────────────────────────────────
     // Ch 05: 미션 완료 이벤트 비동기 처리 (Producer / Consumer)
-    implementation 'org.springframework.kafka:spring-kafka'
+    // implementation 'org.springframework.kafka:spring-kafka'
 
     // ── Security + OAuth2 + JWT ───────────────────────────────────────────────
     // Ch 02: 소셜 로그인(Google/Kakao) + JWT 발급/검증
