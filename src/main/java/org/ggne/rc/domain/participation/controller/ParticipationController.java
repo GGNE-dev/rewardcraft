@@ -37,7 +37,6 @@ public class ParticipationController {
             Long id,
             Long userId,
             Long challengeId,
-            LocalDateTime joinedAt,
             Long totalPoints
     ) {
         public static ParticipationResponse from(Participation p) {
@@ -45,7 +44,6 @@ public class ParticipationController {
                     p.getId(),
                     p.getUser().getId(),
                     p.getChallenge().getId(),
-                    p.getJoinedAt(),
                     p.getTotalPoints()
             );
         }
