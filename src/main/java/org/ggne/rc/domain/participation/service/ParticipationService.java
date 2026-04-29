@@ -45,4 +45,20 @@ public class ParticipationService {
     public List<Participation> findByUserId(Long userId) {
         return participationRepository.findByUserId(userId);
     }
+
+    // [N+1 데모용 — 비교 후 제거]
+    public List<String> getParticipantNicknamesWithNPlusOne(Long challengeId) {
+        List<Participation> participations = participationRepository.findByChallengeId(challengeId);
+        return participations.stream()
+                .map(p -> p.getUser().getNickname())
+                .toList();
+    }
+
+    // [Fetch Join 데모용 — 비교 후 제거]
+    public List<String> getParticipantNicknamesWithFetchJoin(Long challengeId) {
+        List<Participation> participations = participationRepository.findByChallengeIdFetchUser(challengeId);
+        return participations.stream()
+                .map(p -> p.getUser().getNickname())
+                .toList();
+    }
 }
