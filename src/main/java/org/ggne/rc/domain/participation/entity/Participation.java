@@ -6,8 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.ggne.rc.domain.challenge.entity.Challenge;
 import org.ggne.rc.domain.user.entity.User;
+import org.ggne.rc.global.entity.BaseEntity;
 
-import java.time.LocalDateTime;
 
 @Entity
 @Table(
@@ -16,22 +16,19 @@ import java.time.LocalDateTime;
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Participation {
+public class Participation extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)  // LAZY: 실제 접근 시점에만 쿼리 (N+1 문제는 Ch 01에서 해결)
+    @ManyToOne(fetch = FetchType.LAZY)                  // LAZY: 실제 접근 시점에만 쿼리
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "challenge_id", nullable = false)
     private Challenge challenge;
-
-    @Column(name = "joined_at", nullable = false, updatable = false)
-    private LocalDateTime joinedAt;
 
     @Column(name = "total_points", nullable = false)
     private Long totalPoints;
@@ -40,7 +37,6 @@ public class Participation {
         Participation p = new Participation();
         p.user = user;
         p.challenge = challenge;
-        p.joinedAt = LocalDateTime.now();
         p.totalPoints = 0L;
         return p;
     }

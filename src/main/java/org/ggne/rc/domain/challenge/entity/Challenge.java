@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.ggne.rc.global.entity.BaseEntity;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @Table(name = "challenges")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Challenge {
+public class Challenge extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,9 +35,6 @@ public class Challenge {
     @Column(nullable = false)
     private ChallengeStatus status;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
     @Builder
     public Challenge(String title, String description,
                      LocalDateTime startAt, LocalDateTime endAt) {
@@ -48,7 +46,6 @@ public class Challenge {
         this.startAt = startAt;
         this.endAt = endAt;
         this.status = ChallengeStatus.UPCOMING;
-        this.createdAt = LocalDateTime.now();
     }
 
     public void activate() {

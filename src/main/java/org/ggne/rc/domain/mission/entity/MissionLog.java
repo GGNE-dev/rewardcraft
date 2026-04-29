@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.ggne.rc.domain.participation.entity.Participation;
+import org.ggne.rc.global.entity.BaseEntity;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @Table(name = "mission_logs")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MissionLog {
+public class MissionLog extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
