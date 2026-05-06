@@ -5,8 +5,12 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.ggne.rc.domain.challenge.entity.Challenge;
+import org.ggne.rc.domain.mission.entity.MissionLog;
 import org.ggne.rc.domain.user.entity.User;
 import org.ggne.rc.global.entity.BaseEntity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -32,6 +36,9 @@ public class Participation extends BaseEntity {
 
     @Column(name = "total_points", nullable = false)
     private Long totalPoints;
+
+    @OneToMany(mappedBy = "participation", fetch = FetchType.LAZY)
+    private List<MissionLog> missionLogs = new ArrayList<>();
 
     public static Participation join(User user, Challenge challenge) {
         Participation p = new Participation();

@@ -3,6 +3,7 @@ package org.ggne.rc.domain.participation.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.ggne.rc.domain.participation.dto.ParticipantSummaryDto;
 import org.ggne.rc.domain.participation.entity.Participation;
 import org.ggne.rc.domain.participation.service.ParticipationService;
 import org.ggne.rc.global.response.ApiResponse;
@@ -26,8 +27,16 @@ public class ParticipationController {
         return ResponseEntity.status(201).body(ApiResponse.ok(ParticipationResponse.from(p)));
     }
 
+    // 챌린지 참여자 요약 조회 — DTO Projection 결과 반환
+    @GetMapping("/{challengeId}/summary")
+    public ApiResponse<List<ParticipantSummaryDto>> getParticipantSummary(
+            @PathVariable Long challengeId) {
+        return ApiResponse.ok(participationService.getParticipantSummary(challengeId));
+    }
+
 
     // [N+1 데모용 — 비교 후 제거]
+    @Deprecated
     @GetMapping("/n-plus-one-demo/{challengeId}")
     public ApiResponse<List<String>> nPlusOneDemo(@PathVariable Long challengeId) {
         return ApiResponse.ok(
@@ -36,13 +45,13 @@ public class ParticipationController {
     }
 
     // [Fetch Join 데모용 — 비교 후 제거]
+    @Deprecated
     @GetMapping("/fetch-join-demo/{challengeId}")
     public ApiResponse<List<String>> fetchJoinDemo(@PathVariable Long challengeId) {
         return ApiResponse.ok(
                 participationService.getParticipantNicknamesWithFetchJoin(challengeId)
         );
     }
-
 
 
     public record JoinRequest(

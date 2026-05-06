@@ -3,6 +3,7 @@ package org.ggne.rc.domain.participation.service;
 import lombok.RequiredArgsConstructor;
 import org.ggne.rc.domain.challenge.entity.Challenge;
 import org.ggne.rc.domain.challenge.repository.ChallengeRepository;
+import org.ggne.rc.domain.participation.dto.ParticipantSummaryDto;
 import org.ggne.rc.domain.participation.entity.Participation;
 import org.ggne.rc.domain.participation.repository.ParticipationRepository;
 import org.ggne.rc.domain.user.entity.User;
@@ -46,7 +47,18 @@ public class ParticipationService {
         return participationRepository.findByUserId(userId);
     }
 
+    // Fetch Join 활용 — 엔티티 객체 그래프가 필요한 내부 로직에서 사용
+    public List<Participation> getParticipantsWithMissions(Long challengeId) {
+        return participationRepository.findByChallengeWithMissionLogs(challengeId);
+    }
+
+    // DTO Projection 활용 — 화면 출력용 요약 데이터 반환
+    public List<ParticipantSummaryDto> getParticipantSummary(Long challengeId) {
+        return participationRepository.findParticipantSummary(challengeId);
+    }
+
     // [N+1 데모용 — 비교 후 제거]
+    @Deprecated
     public List<String> getParticipantNicknamesWithNPlusOne(Long challengeId) {
         List<Participation> participations = participationRepository.findByChallengeId(challengeId);
         return participations.stream()
@@ -55,6 +67,7 @@ public class ParticipationService {
     }
 
     // [Fetch Join 데모용 — 비교 후 제거]
+    @Deprecated
     public List<String> getParticipantNicknamesWithFetchJoin(Long challengeId) {
         List<Participation> participations = participationRepository.findByChallengeIdFetchUser(challengeId);
         return participations.stream()
