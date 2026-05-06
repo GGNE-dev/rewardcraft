@@ -30,7 +30,59 @@ spring:
         format_sql: true   # show-sql 출력을 들여쓰기 포맷으로 정렬
     open-in-view: false    # 반드시 false로 설정할 것을 권장.
 
+  # ── Security / OAuth2 ───────────────────────────────────────────────────
+  security:
+    oauth2:
+      client:
+        registration:
+          # ── 카카오 ───────────────────────────────────────────────────────
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}             # 카카오 디벨로퍼스 → 앱 → 앱 키 → REST API 키
+            client-secret: ${KAKAO_CLIENT_SECRET}     # 카카오 디벨로퍼스 → 보안 → Client Secret
+            # 카카오는 HTTP Basic Auth(Authorization 헤더)로 client_secret 전송을 지원하지 않음
+            # POST body에 client_secret을 포함해서 보내야 한다 (RFC 6749 §2.3.1 의 비표준 방식)
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code  # 표준 Authorization Code Flow
+            # {baseUrl}: 런타임에 서버 주소로 치환, {registrationId}: "kakao" 로 치환
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - profile_nickname  # 카카오 동의항목명 (2025.05 기준 유효)
+              - account_email     # 이메일 동의항목. 카카오 앱 설정에서 활성화 필요
+            client-name: Kakao
+
+          # ── 구글 ─────────────────────────────────────────────────────────
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}        # Google Cloud Console → OAuth 2.0 클라이언트 ID
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - profile  # Spring Security가 자동으로 full URI로 변환
+              - email    # (https://www.googleapis.com/auth/userinfo.email 등)
+            # client-authentication-method, redirect-uri 생략 가능
+            # → Google은 Spring Security 내장 provider라 기본값으로 동작
+
+        # ── Provider 엔드포인트 설정 ─────────────────────────────────────
+        provider:
+          # Google은 내장 provider이므로 생략
+          # 카카오는 OpenID Connect 미지원(구버전 방식)이라 직접 명시
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize  # 사용자 동의 페이지
+            token-uri: https://kauth.kakao.com/oauth/token              # code → AccessToken 교환
+            user-info-uri: https://kapi.kakao.com/v2/user/me            # 사용자 정보 조회 API
+            # 응답 JSON 최상위의 숫자형 "id" 필드를 사용자 식별자로 사용, 구글은 "sub" (자동), 카카오는 명시 필요
+            user-name-attribute: id
+
+# ── JWT ───────────────────────────────────────────────────────────────────
+jwt:
+  secret: ${JWT_SECRET}              # Base64 인코딩된 32바이트(256bit) 이상 랜덤 문자열
+  access-token-validity: 900         # Access Token 유효시간: 15분 (탈취 피해 최소화)
+  refresh-token-validity: 1209600    # Refresh Token 유효시간: 14일
+
+# ── 앱 커스텀 설정 ────────────────────────────────────────────────────────
+app:
+  oauth2:
+    # OAuth2 로그인 성공 후 토큰을 담아 리다이렉트할 클라이언트 주소
+    # 프론트엔드가 없는 로컬 개발 환경에서는 백엔드 주소로 임시 설정
+    redirect-uri: http://localhost:8080/auth/callback
 
   # Redis     → 추후 추가 예정
   # Kafka     → 추후 추가 예정
-  # OAuth2    → 추후 추가 예정
