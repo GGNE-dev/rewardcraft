@@ -45,24 +45,29 @@ dependencies {
     implementation 'org.redisson:redisson-spring-boot-starter:3.32.0'         // 분산 락(RLock) 전용 Redisson
 
     // ── Kafka ─────────────────────────────────────────────────────────────────
-    // Ch 05: 미션 완료 이벤트 비동기 처리 (Producer / Consumer)
+    // 미션 완료 이벤트 비동기 처리 (Producer / Consumer)
     // implementation 'org.springframework.kafka:spring-kafka'
 
     // ── Security + OAuth2 + JWT ───────────────────────────────────────────────
-    // Ch 02: 소셜 로그인(Google/Kakao) + JWT 발급/검증
+    // 소셜 로그인(Google/Kakao) + JWT 발급/검증
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 
+    // Rate Limiting — Token Bucket 알고리즘 (Bucket4j + Lettuce/Redis 분산 버킷)
+    implementation 'com.bucket4j:bucket4j_jdk11-core:8.14.0'
+    implementation 'com.bucket4j:bucket4j_jdk11-redis-common:8.14.0'
+    implementation 'com.bucket4j:bucket4j_jdk11-lettuce:8.14.0'
+
     // ── Spring Cloud (MSA) ────────────────────────────────────────────────────
-    // Ch 06: 서비스 간 HTTP 호출(Feign) + 장애 전파 차단(CircuitBreaker/Resilience4j)
+    // 서비스 간 HTTP 호출(Feign) + 장애 전파 차단(CircuitBreaker/Resilience4j)
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
 
     // ── 관측성 (Observability) ────────────────────────────────────────────────
-    // Ch 08: /actuator/health, /actuator/prometheus 엔드포인트 노출
+    // /actuator/health, /actuator/prometheus 엔드포인트 노출
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'                 // Prometheus 메트릭 포맷 변환
 
