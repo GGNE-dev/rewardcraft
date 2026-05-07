@@ -7,6 +7,7 @@ import org.ggne.rc.global.security.oauth2.CustomOAuth2UserService;
 import org.ggne.rc.global.security.oauth2.OAuth2SuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -16,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -41,7 +43,7 @@ public class SecurityConfig {
                 // 인가 규칙
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/error", "/login/**", "/oauth2/**", "/api/auth/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // /api/admin/** 의 세부 권한은 각 컨트롤러의 @PreAuthorize가 담당
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
                 )

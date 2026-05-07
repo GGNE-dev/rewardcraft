@@ -7,9 +7,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.ggne.rc.domain.user.entity.UserRole;
 import org.springframework.http.HttpHeaders;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -18,6 +20,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Stream;
+
 
 @Slf4j
 @Component
@@ -45,14 +49,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 Long userId = Long.parseLong(claims.getSubject());
                 String role = (String) claims.get("role");
+                UserRole userRole = UserRole.valueOf(role);
+
+                // ROLE_X 하나 + 해당 역할의 모든 PERM_X를 합쳐 GrantedAuthority 목록 생성
+                // DB 조회 없이 JWT 클레임 + UserRole 열거형만으로 권한 목록 완성 — Stateless 핵심
+                List<GrantedAuthority> authorities = Stream.concat(
+                        Stream.<GrantedAuthority>of(new SimpleGrantedAuthority("ROLE_" + role)),
+                        userRole.getPermissions().stream()
+                                .map(p -> new SimpleGrantedAuthority(p.name()))
+                ).toList();
 
                 // DB 조회 없이 JWT 클레임만으로 인증 객체 생성 — Stateless 핵심
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 userId,   // principal — 컨트롤러에서 @AuthenticationPrincipal Long userId 로 꺼냄
                                 null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                                authorities
                         );
+
+
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 

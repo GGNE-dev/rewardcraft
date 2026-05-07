@@ -2,7 +2,9 @@ package org.ggne.rc.global.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.ggne.rc.global.response.ApiResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -29,6 +31,13 @@ public class GlobalExceptionHandler {
                 .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
                 .collect(joining(", "));
         return ResponseEntity.badRequest().body(ApiResponse.error(message));
+    }
+
+    // @PreAuthorize 권한 거부 — 403 반환
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AuthorizationDeniedException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.error("접근 권한이 없습니다."));
     }
 
     // 예상치 못한 예외 — 스택 트레이스를 로그에 남기고 500 응답
