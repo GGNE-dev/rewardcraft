@@ -8,6 +8,8 @@ import org.ggne.rc.domain.user.service.UserService;
 import org.ggne.rc.global.exception.BusinessException;
 import org.ggne.rc.global.response.ApiResponse;
 import org.ggne.rc.global.security.jwt.JwtProvider;
+import org.ggne.rc.global.security.ratelimit.RateLimitScope;
+import org.ggne.rc.global.security.ratelimit.RateLimited;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +29,7 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/refresh")
+    @RateLimited(name = "auth-refresh", capacity = 3, refillSeconds = 60, scope = RateLimitScope.IP)
     public ApiResponse<Map<String, String>> refresh(@RequestParam String refreshToken) {
 
         // 1. JWT 자체가 유효한지 (서명, 만료) 먼저 검증
