@@ -84,5 +84,11 @@ app:
     # 프론트엔드가 없는 로컬 개발 환경에서는 백엔드 주소로 임시 설정
     redirect-uri: http://localhost:8080/auth/callback
 
-  # Redis     → 추후 추가 예정
+  # ── Redis ────────────────────────────────────────────────────────────────
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      # password: 설정 안 함 (로컬 개발용. 운영 환경에서는 반드시 설정)
+
   # Kafka     → 추후 추가 예정

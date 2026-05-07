@@ -19,8 +19,23 @@ services:
       timeout: 5s     # 5초 안에 응답 없으면 실패로 간주
       retries: 5      # 5번 연속 실패 시 unhealthy 상태로 전환
 
-  # Redis     → Ch 03 캐싱 / Sorted Set 랭킹 / 분산 락 시작 시 추가 예정
+  # ── Redis ────────────────────────────────────────────────────────────────
+  # Ch 03~: Refresh Token 저장, Rate Limiting, 분산 락, Sorted Set 랭킹
+  redis:
+    image: redis:7-alpine              # alpine: 경량 이미지
+    container_name: rc-redis
+    ports:
+      - "6379:6379"                    # Redis 기본 포트
+    volumes:
+      - redis_data:/data               # AOF/RDB 영속화 데이터 보존
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Kafka     → Ch 05 이벤트 드리븐 시작 시 추가 예정
 
 volumes:
   postgres_data:    # 도커가 관리하는 named volume. 컨테이너 삭제 후 재생성해도 데이터 보존
+  redis_data:       # Redis 데이터 영속화
