@@ -40,7 +40,7 @@ public class SecurityConfig {
                 )
                 // 인가 규칙
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/error", "/login/**", "/oauth2/**").permitAll()
+                        .requestMatchers("/", "/error", "/login/**", "/oauth2/**", "/api/auth/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()

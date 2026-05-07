@@ -90,4 +90,9 @@ public class JwtProvider {
 
         return false;
     }
+
+    // validate() 호출 후에만 사용할 것 — parse()는 유효하지 않은 토큰에서 예외를 던짐
+    public Long getUserId(String token) {
+        return Long.parseLong(parse(token).getSubject());
+    }
 }
