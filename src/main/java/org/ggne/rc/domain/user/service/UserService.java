@@ -3,7 +3,7 @@ package org.ggne.rc.domain.user.service;
 import lombok.RequiredArgsConstructor;
 import org.ggne.rc.domain.user.entity.User;
 import org.ggne.rc.domain.user.repository.UserRepository;
-import org.ggne.rc.global.exception.BusinessException;
+import org.ggne.rc.global.exception.RCBusinessException;
 import org.ggne.rc.global.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +19,7 @@ public class UserService {
 
     public User findById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new RCBusinessException(ErrorCode.USER_NOT_FOUND));
     }
 
     public List<User> findAll() {
