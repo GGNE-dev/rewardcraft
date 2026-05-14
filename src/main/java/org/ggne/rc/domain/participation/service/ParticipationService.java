@@ -8,8 +8,8 @@ import org.ggne.rc.domain.participation.entity.Participation;
 import org.ggne.rc.domain.participation.repository.ParticipationRepository;
 import org.ggne.rc.domain.user.entity.User;
 import org.ggne.rc.domain.user.repository.UserRepository;
-import org.ggne.rc.global.exception.ConflictException;
-import org.ggne.rc.global.exception.NotFoundException;
+import org.ggne.rc.global.exception.BusinessException;
+import org.ggne.rc.global.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,19 +28,19 @@ public class ParticipationService {
     public Participation join(Long userId, Long challengeId) {
         // DB 레벨 unique 제약이 있지만, 명시적 중복 검사로 의미 있는 에러 메시지 제공
         if (participationRepository.findByUserIdAndChallengeId(userId, challengeId).isPresent()) {
-            throw new ConflictException("이미 참여 중인 챌린지입니다.");
+            throw new BusinessException(ErrorCode.ALREADY_PARTICIPATED);
         }
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("회원"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         Challenge challenge = challengeRepository.findById(challengeId)
-                .orElseThrow(() -> new NotFoundException("챌린지"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
 
         return participationRepository.save(Participation.join(user, challenge));
     }
 
     public Participation findById(Long id) {
         return participationRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("참여 정보"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PARTICIPATION_NOT_FOUND));
     }
 
     public List<Participation> findByUserId(Long userId) {

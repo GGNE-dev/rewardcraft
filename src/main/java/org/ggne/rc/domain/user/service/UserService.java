@@ -3,7 +3,8 @@ package org.ggne.rc.domain.user.service;
 import lombok.RequiredArgsConstructor;
 import org.ggne.rc.domain.user.entity.User;
 import org.ggne.rc.domain.user.repository.UserRepository;
-import org.ggne.rc.global.exception.NotFoundException;
+import org.ggne.rc.global.exception.BusinessException;
+import org.ggne.rc.global.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,14 +12,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)  // 기본값: 읽기 전용. 쓰기 메서드는 개별로 @Transactional 추가
+@Transactional(readOnly = true)
 public class UserService {
 
     private final UserRepository userRepository;
 
     public User findById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("회원"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
     }
 
     public List<User> findAll() {
