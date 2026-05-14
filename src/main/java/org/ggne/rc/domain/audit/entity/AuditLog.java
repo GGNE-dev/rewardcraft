@@ -1,4 +1,4 @@
-package org.ggne.rc.domain.audit;
+package org.ggne.rc.domain.audit.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
