@@ -15,8 +15,8 @@ import static java.util.stream.Collectors.joining;
 public class GlobalExceptionHandler {
 
     // 업무 에러 — ErrorCode의 status + code + message 포함 응답
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBusiness(BusinessException e) {
+    @ExceptionHandler(RCBusinessException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBusiness(RCBusinessException e) {
         log.warn("BusinessException: [{}] {}", e.getErrorCode().getCode(), e.getMessage());
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
@@ -24,8 +24,8 @@ public class GlobalExceptionHandler {
     }
 
     // RewardCraft 시스템/인프라 에러 — Caused by 포함 전체 스택 기록, 500 응답
-    @ExceptionHandler(SystemException.class)
-    public ResponseEntity<ApiResponse<Void>> handleSystem(SystemException e) {
+    @ExceptionHandler(RCSystemException.class)
+    public ResponseEntity<ApiResponse<Void>> handleSystem(RCSystemException e) {
         log.error("SystemException: {}", e.getMessage(), e);
         return ResponseEntity.internalServerError()
                 .body(ApiResponse.error("서버 오류가 발생했습니다."));
