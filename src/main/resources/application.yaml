@@ -2,6 +2,9 @@ spring:
   application:
     name: rewardcraft
 
+  profiles:
+    active: local   # 로컬 개발 환경. 운영 배포 시 prod로 변경
+
   # ── Virtual Thread (Java 21) ─────────────────────────────────────────────
   # 플랫폼 스레드 대신 가상 스레드를 Tomcat 요청 처리에 사용
   # I/O 대기가 많은 웹 서버 환경에서 처리량이 크게 향상됨 (Ch 06에서 상세 학습)

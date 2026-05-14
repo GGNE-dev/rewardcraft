@@ -42,7 +42,7 @@ public class SecurityConfig {
                 )
                 // 인가 규칙
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/error", "/login/**", "/oauth2/**", "/api/auth/**").permitAll()
+                        .requestMatchers("/", "/error", "/login/**", "/oauth2/**", "/api/auth/**", "/api/dev/**").permitAll()
                         // /api/admin/** 의 세부 권한은 각 컨트롤러의 @PreAuthorize가 담당
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
