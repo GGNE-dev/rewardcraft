@@ -1,0 +1,7 @@
+// 순수 Java 모듈 — Spring Boot 플러그인 없음
+// 모놀리스와 notification-service가 공통으로 의존하는 이벤트 정의만 포함
+
+dependencies {
+    // Kafka JSON 직렬화 시 LocalDateTime 처리에 필요
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+}

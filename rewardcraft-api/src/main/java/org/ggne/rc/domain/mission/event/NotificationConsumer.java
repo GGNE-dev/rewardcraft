@@ -4,6 +4,7 @@ package org.ggne.rc.domain.mission.event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ggne.rc.domain.notification.service.NotificationService;
+import org.ggne.rc.events.MissionCompletedEvent;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;

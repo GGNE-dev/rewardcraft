@@ -1,112 +1,38 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.14'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.springframework.boot' version '3.5.14' apply false
+    id 'io.spring.dependency-management' version '1.1.7' apply false
 }
 
-group = 'org.ggne'
-version = '0.0.1-SNAPSHOT'
-description = 'rewardcraft'
+// 모든 서브프로젝트 공통 설정
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+    group = 'org.ggne'
+    version = '0.0.1-SNAPSHOT'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
     }
-}
 
-// Spring Cloud BOM 버전 — Spring Boot 3.5.x 와 호환되는 버전
-ext {
-    set('springCloudVersion', '2025.0.0')
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-
-    // ── Web / 공통 ───────────────────────────────────────────────────────────
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'  // @Valid, @NotBlank 등 Bean Validation
-    implementation 'org.springframework.boot:spring-boot-starter-aop'
-
-    // ── JPA + DB ─────────────────────────────────────────────────────────────
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    runtimeOnly 'org.postgresql:postgresql'                                    // PostgreSQL JDBC 드라이버
-
-    // QueryDSL — Ch 01 동적 쿼리에서 본격 사용
-    // jakarta 분류자(classifier)를 붙여야 Spring Boot 3.x(Jakarta EE 9+) 와 호환됨
-    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
-    annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'             // Q클래스 생성 APT 프로세서
-    annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
-    annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
-
-    // ── Redis ─────────────────────────────────────────────────────────────────
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'  // Lettuce 클라이언트 포함
-    implementation 'org.redisson:redisson-spring-boot-starter:3.32.0'         // 분산 락(RLock) 전용 Redisson
-
-    // ── Kafka ─────────────────────────────────────────────────────────────────
-    // 미션 완료 이벤트 비동기 처리 (Producer / Consumer)
-    implementation 'org.springframework.kafka:spring-kafka'
-
-    // ── Security + OAuth2 + JWT ───────────────────────────────────────────────
-    // 소셜 로그인(Google/Kakao) + JWT 발급/검증
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
-
-    // Rate Limiting — Token Bucket 알고리즘 (Bucket4j + Lettuce/Redis 분산 버킷)
-    implementation 'com.bucket4j:bucket4j_jdk11-core:8.14.0'
-    implementation 'com.bucket4j:bucket4j_jdk11-redis-common:8.14.0'
-    implementation 'com.bucket4j:bucket4j_jdk11-lettuce:8.14.0'
-
-    // ── Spring Cloud (MSA) ────────────────────────────────────────────────────
-    // 서비스 간 HTTP 호출(Feign) + 장애 전파 차단(CircuitBreaker/Resilience4j)
-    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
-    implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
-
-    // ── 관측성 (Observability) ────────────────────────────────────────────────
-    // /actuator/health, /actuator/prometheus 엔드포인트 노출
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'                 // Prometheus 메트릭 포맷 변환
-
-    // ── 개발 편의 ─────────────────────────────────────────────────────────────
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'            // 코드 변경 시 자동 재시작
-
-    // ── Lombok ────────────────────────────────────────────────────────────────
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-
-    // ── 테스트 ────────────────────────────────────────────────────────────────
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
-    testImplementation 'org.springframework.kafka:spring-kafka-test'
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-// Spring Cloud BOM — 위 ext 블록의 버전을 여기서 실제로 적용
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    repositories {
+        mavenCentral()
     }
-}
 
-// QueryDSL Q클래스 생성 경로 설정
-// @Entity 클래스를 분석해 QUser, QChallenge 같은 타입-세이프 쿼리 클래스를 자동 생성
-def querydslDir = layout.buildDirectory.dir("generated/querydsl")
+    // Spring Boot BOM을 모든 서브프로젝트에 공통 적용 — Lombok 등 버전을 여기서 일괄 관리
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.boot:spring-boot-dependencies:3.5.14"
+        }
+    }
 
-sourceSets {
-    main.java.srcDirs += [querydslDir]
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.generatedSourceOutputDirectory.set(querydslDir)
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
+    dependencies {
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+        testCompileOnly 'org.projectlombok:lombok'
+        testAnnotationProcessor 'org.projectlombok:lombok'
+    }
 }

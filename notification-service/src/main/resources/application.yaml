@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: notification-service
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: notification-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      properties:
+        spring.json.trusted.packages: "org.ggne.rc.events"
+    listener:
+      ack-mode: manual
+
+server:
+  port: 8081
+
+kafka:
+  topics:
+    mission-completed: mission.completed

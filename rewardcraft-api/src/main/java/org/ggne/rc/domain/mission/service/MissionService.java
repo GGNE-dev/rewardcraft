@@ -2,7 +2,7 @@ package org.ggne.rc.domain.mission.service;
 
 import lombok.RequiredArgsConstructor;
 import org.ggne.rc.domain.mission.entity.MissionLog;
-import org.ggne.rc.domain.mission.event.MissionCompletedEvent;
+import org.ggne.rc.events.MissionCompletedEvent;
 import org.ggne.rc.domain.mission.event.MissionEventProducer;
 import org.ggne.rc.domain.mission.repository.MissionLogRepository;
 import org.ggne.rc.domain.participation.entity.Participation;

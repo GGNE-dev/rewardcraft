@@ -3,6 +3,7 @@ package org.ggne.rc.domain.mission.event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ggne.rc.domain.challenge.service.RankingService;
+import org.ggne.rc.events.MissionCompletedEvent;
 import org.ggne.rc.domain.mission.entity.ProcessedEvent;
 import org.ggne.rc.domain.mission.repository.ProcessedEventRepository;
 import org.springframework.kafka.annotation.KafkaListener;
