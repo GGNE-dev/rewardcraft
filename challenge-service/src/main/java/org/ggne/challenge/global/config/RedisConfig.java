@@ -1,35 +1,34 @@
-package org.ggne.rc.global.config;
+package org.ggne.challenge.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.redisson.Redisson;
-import org.redisson.api.RedissonClient;
-import org.redisson.config.Config;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import java.time.Duration;
+
 @Configuration
+@EnableCaching
 public class RedisConfig {
 
-    // RedisTemplate: Redis 명령을 Java에서 실행하는 객체
-    // key는 String, value는 JSON으로 직렬화한다
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory rcf) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(rcf);
-
-        // key는 사람이 읽을 수 있는 문자열로
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
 
-        // value는 JSON으로 직렬화 (Java 객체 → JSON 문자열 → Redis)
-        // LocalDateTime 등 Java 8 날짜 타입을 JSON으로 변환하려면 JavaTimeModule 필요
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -38,23 +37,21 @@ public class RedisConfig {
         template.setValueSerializer(serializer);
         template.setHashValueSerializer(serializer);
         template.afterPropertiesSet();
-
         return template;
     }
 
-    // RedissonClient: 분산 락(RLock) 전용 클라이언트
-    // spring-boot-starter-data-redis의 Lettuce와 별개로 동작한다
-    @Bean(destroyMethod = "shutdown")
-    public RedissonClient redissonClient(
-            @Value("${spring.data.redis.host}") String host,
-            @Value("${spring.data.redis.port}") int port) {
-        Config config = new Config();
+    @Bean
+    public CacheManager cacheManager(RedisConnectionFactory cf) {
+        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofHours(1))
+                .serializeKeysWith(RedisSerializationContext.SerializationPair
+                        .fromSerializer(new StringRedisSerializer()))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair
+                        .fromSerializer(new GenericJackson2JsonRedisSerializer()))
+                .disableCachingNullValues();
 
-        config.useSingleServer()
-                .setAddress("redis://" + host + ":" + port)
-                .setConnectionPoolSize(64)
-                .setConnectionMinimumIdleSize(10);
-
-        return Redisson.create(config);
+        return RedisCacheManager.builder(cf).cacheDefaults(config)
+                .withCacheConfiguration("challenge", config.entryTtl(Duration.ofHours(1)))
+                .build();
     }
 }

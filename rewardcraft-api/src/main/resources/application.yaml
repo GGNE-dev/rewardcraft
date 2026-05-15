@@ -3,76 +3,64 @@ spring:
     name: rewardcraft
 
   profiles:
-    active: local   # 로컬 개발 환경. 운영 배포 시 prod로 변경
+    active: local
 
-  # ── Virtual Thread (Java 21) ─────────────────────────────────────────────
-  # 플랫폼 스레드 대신 가상 스레드를 Tomcat 요청 처리에 사용
-  # I/O 대기가 많은 웹 서버 환경에서 처리량이 크게 향상됨 (Ch 06에서 상세 학습)
   threads:
     virtual:
       enabled: true
 
   # ── DataSource ───────────────────────────────────────────────────────────
   datasource:
-    url: jdbc:postgresql://localhost:5433/rewardcraft   # docker-compose.yml 호스트 포트(5433)와 일치
-    username: rc_user                                   # docker-compose.yml의 POSTGRES_USER와 일치
-    password: rc_pass                                   # docker-compose.yml의 POSTGRES_PASSWORD와 일치
+    url: jdbc:postgresql://localhost:5433/rewardcraft
+    username: rc_user
+    password: rc_pass
     driver-class-name: org.postgresql.Driver
 
   # ── JPA ──────────────────────────────────────────────────────────────────
   jpa:
     hibernate:
-      # create     : 앱 시작 시 기존 테이블 DROP 후 재생성 → 개발 초기에만 사용
-      # update     : 엔티티 변경분만 반영 (컬럼 삭제는 안 됨) → 위험, 실무에서 비추천
-      # validate   : 엔티티와 실제 스키마가 일치하는지만 검증, DB는 건드리지 않음
-      # none       : 아무것도 하지 않음 → 운영 환경 (Flyway/Liquibase로 직접 관리)
-      ddl-auto: create   # ← 스키마가 안정화되면 validate 로 변경할 것
-    show-sql: true       # 실행되는 SQL을 콘솔에 출력 (개발 시 N+1 문제 파악에 유용)
+      ddl-auto: create
+    show-sql: true
     properties:
       hibernate:
-        format_sql: true   # show-sql 출력을 들여쓰기 포맷으로 정렬
-    open-in-view: false    # 반드시 false로 설정할 것을 권장.
+        format_sql: true
+    open-in-view: false
 
-  # ── Security / OAuth2 ───────────────────────────────────────────────────
+  # ── Security / OAuth2 ────────────────────────────────────────────────────
   security:
     oauth2:
       client:
         registration:
-          # ── 카카오 ───────────────────────────────────────────────────────
           kakao:
-            client-id: ${KAKAO_CLIENT_ID}             # 카카오 디벨로퍼스 → 앱 → 앱 키 → REST API 키
-            client-secret: ${KAKAO_CLIENT_SECRET}     # 카카오 디벨로퍼스 → 보안 → Client Secret
-            # 카카오는 HTTP Basic Auth(Authorization 헤더)로 client_secret 전송을 지원하지 않음
-            # POST body에 client_secret을 포함해서 보내야 한다 (RFC 6749 §2.3.1 의 비표준 방식)
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
             client-authentication-method: client_secret_post
-            authorization-grant-type: authorization_code  # 표준 Authorization Code Flow
-            # {baseUrl}: 런타임에 서버 주소로 치환, {registrationId}: "kakao" 로 치환
+            authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope:
-              - profile_nickname  # 카카오 동의항목명 (2025.05 기준 유효)
-              - account_email     # 이메일 동의항목. 카카오 앱 설정에서 활성화 필요
+              - profile_nickname
+              - account_email
             client-name: Kakao
-
-          # ── 구글 ─────────────────────────────────────────────────────────
           google:
-            client-id: ${GOOGLE_CLIENT_ID}        # Google Cloud Console → OAuth 2.0 클라이언트 ID
+            client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
             scope:
-              - profile  # Spring Security가 자동으로 full URI로 변환
-              - email    # (https://www.googleapis.com/auth/userinfo.email 등)
-            # client-authentication-method, redirect-uri 생략 가능
-            # → Google은 Spring Security 내장 provider라 기본값으로 동작
-
-        # ── Provider 엔드포인트 설정 ─────────────────────────────────────
+              - profile
+              - email
         provider:
-          # Google은 내장 provider이므로 생략
-          # 카카오는 OpenID Connect 미지원(구버전 방식)이라 직접 명시
           kakao:
-            authorization-uri: https://kauth.kakao.com/oauth/authorize  # 사용자 동의 페이지
-            token-uri: https://kauth.kakao.com/oauth/token              # code → AccessToken 교환
-            user-info-uri: https://kapi.kakao.com/v2/user/me            # 사용자 정보 조회 API
-            # 응답 JSON 최상위의 숫자형 "id" 필드를 사용자 식별자로 사용, 구글은 "sub" (자동), 카카오는 명시 필요
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
+
+  # ── Redis ─────────────────────────────────────────────────────────────────
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  # ── Kafka ─────────────────────────────────────────────────────────────────
   kafka:
     bootstrap-servers: localhost:9092
     producer:
@@ -91,28 +79,45 @@ spring:
       properties:
         spring.json.trusted.packages: "org.ggne.rc.*"
     listener:
-      ack-mode: manual   # Acknowledgment.acknowledge()가 실제로 동작하려면 필수. enable-auto-commit: false 만으로는 부족
+      ack-mode: manual
+
+  # ── Feign + CircuitBreaker ────────────────────────────────────────────────
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
 
 # ── JWT ───────────────────────────────────────────────────────────────────
 jwt:
-  secret: ${JWT_SECRET}              # Base64 인코딩된 32바이트(256bit) 이상 랜덤 문자열
-  access-token-validity: 900         # Access Token 유효시간: 15분 (탈취 피해 최소화)
-  refresh-token-validity: 1209600    # Refresh Token 유효시간: 14일
+  secret: ${JWT_SECRET}
+  access-token-validity: 900
+  refresh-token-validity: 1209600
 
 # ── 앱 커스텀 설정 ────────────────────────────────────────────────────────
 app:
   oauth2:
-    # OAuth2 로그인 성공 후 토큰을 담아 리다이렉트할 클라이언트 주소
-    # 프론트엔드가 없는 로컬 개발 환경에서는 백엔드 주소로 임시 설정
     redirect-uri: http://localhost:8080/auth/callback
 
-  # ── Redis ────────────────────────────────────────────────────────────────
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      # password: 설정 안 함 (로컬 개발용. 운영 환경에서는 반드시 설정)
-
+# ── Kafka 토픽명 ──────────────────────────────────────────────────────────
 kafka:
   topics:
     mission-completed: mission.completed
+
+# ── 외부 서비스 URL ───────────────────────────────────────────────────────
+services:
+  challenge:
+    url: http://localhost:8082
+
+# ── CircuitBreaker (Resilience4j) ─────────────────────────────────────────
+resilience4j:
+  circuitbreaker:
+    instances:
+      challenge-service:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 60s
+        permitted-number-of-calls-in-half-open-state: 3
+  timelimiter:
+    instances:
+      challenge-service:
+        timeout-duration: 3s

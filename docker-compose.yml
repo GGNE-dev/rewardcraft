@@ -57,6 +57,66 @@ services:
     volumes:
       - kafka_data:/var/lib/kafka/data
 
+  # ── rewardcraft-api ──────────────────────────────────────────────────────
+  # Ch 06~: User, Reward 도메인 담당 (Challenge BC는 challenge-service로 분리)
+  rewardcraft-api:
+    build:
+      context: ./rewardcraft-api
+      dockerfile: Dockerfile
+    container_name: rc-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      challenge-service:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/rewardcraft
+      APP_DATA_REDIS_HOST: redis
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SERVICES_CHALLENGE_URL: http://challenge-service:8082
+
+  # ── challenge-service ─────────────────────────────────────────────────────
+  # Ch 06~: Challenge, Participation, MissionLog 도메인 담당
+  challenge-service:
+    build:
+      context: ./challenge-service
+      dockerfile: Dockerfile
+    container_name: rc-challenge
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/rewardcraft
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+  # ── notification-service ──────────────────────────────────────────────────
+  # Ch 06~: Kafka 컨슈머 전용 알림 서비스
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: rc-notification
+    ports:
+      - "8081:8081"
+    depends_on:
+      kafka:
+        condition: service_started
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
 volumes:
   postgres_data:    # 도커가 관리하는 named volume. 컨테이너 삭제 후 재생성해도 데이터 보존
   redis_data:       # Redis 데이터 영속화

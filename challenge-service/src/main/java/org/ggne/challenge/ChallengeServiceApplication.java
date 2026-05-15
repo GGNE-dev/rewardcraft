@@ -1,16 +1,13 @@
-package org.ggne.rc;
+package org.ggne.challenge;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-@EnableJpaAuditing
-@EnableFeignClients
 @SpringBootApplication
-public class RewardcraftApplication {
-
+@EnableJpaAuditing
+public class ChallengeServiceApplication {
     public static void main(String[] args) {
-        SpringApplication.run(RewardcraftApplication.class, args);
+        SpringApplication.run(ChallengeServiceApplication.class, args);
     }
 }

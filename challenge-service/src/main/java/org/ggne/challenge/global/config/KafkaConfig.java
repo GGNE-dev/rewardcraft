@@ -1,8 +1,10 @@
-package org.ggne.rc.global.config;
+package org.ggne.challenge.global.config;
 
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
@@ -11,8 +13,14 @@ import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries;
 @Configuration
 public class KafkaConfig {
 
-    // mission.completed 토픽 생성 책임은 challenge-service로 이전됨
-    // rewardcraft-api는 Kafka Consumer(notification-group)로만 동작
+    // challenge-service가 mission.completed 토픽을 생성하는 책임을 가진다
+    @Bean
+    public NewTopic missionCompletedTopic() {
+        return TopicBuilder.name("mission.completed")
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
 
     @Bean
     public DefaultErrorHandler errorHandler(KafkaTemplate<String, Object> kafkaTemplate) {

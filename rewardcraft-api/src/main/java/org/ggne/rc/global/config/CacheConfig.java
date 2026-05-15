@@ -29,8 +29,7 @@ public class CacheConfig {
                 .disableCachingNullValues();  // null은 캐싱하지 않음
 
         return RedisCacheManager.builder(cf).cacheDefaults(defaultConfig)
-                // 캐시 이름별로 TTL을 다르게 줄 수 있음
-                .withCacheConfiguration("challenge", defaultConfig.entryTtl(Duration.ofHours(1)))
+                // "challenge" 캐시는 challenge-service로 이전됨
                 .withCacheConfiguration("userProfile", defaultConfig.entryTtl(Duration.ofMinutes(10)))
                 .build();
     }
