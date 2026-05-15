@@ -90,6 +90,8 @@ spring:
       enable-auto-commit: false
       properties:
         spring.json.trusted.packages: "org.ggne.rc.*"
+    listener:
+      ack-mode: manual   # Acknowledgment.acknowledge()가 실제로 동작하려면 필수. enable-auto-commit: false 만으로는 부족
 
 # ── JWT ───────────────────────────────────────────────────────────────────
 jwt:
