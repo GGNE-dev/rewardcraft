@@ -1,8 +1,9 @@
 package org.ggne.rc.domain.mission.service;
 
 import lombok.RequiredArgsConstructor;
-import org.ggne.rc.domain.challenge.service.RankingService;
 import org.ggne.rc.domain.mission.entity.MissionLog;
+import org.ggne.rc.domain.mission.event.MissionCompletedEvent;
+import org.ggne.rc.domain.mission.event.MissionEventProducer;
 import org.ggne.rc.domain.mission.repository.MissionLogRepository;
 import org.ggne.rc.domain.participation.entity.Participation;
 import org.ggne.rc.domain.participation.repository.ParticipationRepository;
@@ -20,9 +21,10 @@ public class MissionService {
 
     private final MissionLogRepository missionLogRepository;
     private final ParticipationRepository participationRepository;
-    private final RankingService rankingService;
-    // ⚠️ Ch 05에서 rankingService → MissionEventProducer(Kafka)로 교체됨
+    private final MissionEventProducer eventProducer;
 
+
+    // TODO : 추후 Outbox 패턴으로 개선 필요. (트랜잭션과 이벤트의 불일치 현상 이슈)
     @Transactional
     public MissionLog complete(Long participationId, long points, String memo) {
         Participation participation = participationRepository.findById(participationId)
@@ -30,14 +32,19 @@ public class MissionService {
 
         participation.addPoints(points);
 
-        // Redis 랭킹 갱신 (Ch 05에서 Kafka 비동기 처리로 교체)
-        rankingService.addPoints(
-                participation.getChallenge().getId(),
-                participation.getUser().getId(),
-                points
+        MissionLog savedLog = missionLogRepository.save(MissionLog.complete(participation, points, memo));
+
+        // Redis 랭킹 갱신 (Redis(sync) -> Kafka(async)로 변경)
+        eventProducer.publishMissionCompleted(
+                MissionCompletedEvent.of(
+                        participation.getUser().getId(),
+                        participation.getChallenge().getId(),
+                        participation.getId(),
+                        points
+                )
         );
 
-        return missionLogRepository.save(MissionLog.complete(participation, points, memo));
+        return savedLog;
     }
 
     public List<MissionLog> findByParticipationId(Long participationId) {
