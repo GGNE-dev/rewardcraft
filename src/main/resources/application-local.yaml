@@ -1,0 +1,7 @@
+spring:
+  jpa:
+    # ddl-auto: create 로 Hibernate가 스키마를 먼저 생성한 뒤 data.sql이 실행되도록 순서 보장
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always   # PostgreSQL은 embedded DB가 아니라 기본값이 never이므로 명시 필요
