@@ -1,5 +1,6 @@
 package org.ggne.challenge.global.config;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -42,12 +43,24 @@ public class RedisConfig {
 
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory cf) {
+        // CacheManager 전용 ObjectMapper — JavaTimeModule 등록 + 타입 정보 포함
+        // GenericJackson2JsonRedisSerializer는 역직렬화 시 원래 클래스를 복원해야 하므로
+        // activateDefaultTyping으로 JSON에 "@class" 타입 정보를 함께 저장
+        ObjectMapper cacheMapper = new ObjectMapper();
+        cacheMapper.registerModule(new JavaTimeModule());
+        cacheMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        cacheMapper.activateDefaultTyping(
+                cacheMapper.getPolymorphicTypeValidator(),
+                ObjectMapper.DefaultTyping.NON_FINAL,
+                JsonTypeInfo.As.PROPERTY
+        );
+
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofHours(1))
                 .serializeKeysWith(RedisSerializationContext.SerializationPair
                         .fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair
-                        .fromSerializer(new GenericJackson2JsonRedisSerializer()))
+                        .fromSerializer(new GenericJackson2JsonRedisSerializer(cacheMapper)))
                 .disableCachingNullValues();
 
         return RedisCacheManager.builder(cf).cacheDefaults(config)

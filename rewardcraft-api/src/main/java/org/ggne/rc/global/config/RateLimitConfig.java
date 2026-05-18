@@ -17,10 +17,10 @@ import java.time.Duration;
 @Configuration
 public class RateLimitConfig {
 
-    @Value("${app.data.redis.host}")
+    @Value("${spring.data.redis.host}")
     private String redisHost;
 
-    @Value("${app.data.redis.port}")
+    @Value("${spring.data.redis.port}")
     private int redisPort;
 
     // Bucket4j 전용 Lettuce 클라이언트 — Spring의 StringRedisTemplate과 별개로 생성

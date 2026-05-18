@@ -77,7 +77,7 @@ services:
         condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/rewardcraft
-      APP_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_HOST: redis
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SERVICES_CHALLENGE_URL: http://challenge-service:8082
 

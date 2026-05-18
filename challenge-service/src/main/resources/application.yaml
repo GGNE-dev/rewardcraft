@@ -54,6 +54,10 @@ spring:
 server:
   port: 8082
 
+logging:
+  level:
+    org.ggne.challenge: DEBUG
+
 kafka:
   topics:
     mission-completed: mission.completed

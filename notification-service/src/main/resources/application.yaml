@@ -18,6 +18,10 @@ spring:
 server:
   port: 8081
 
+logging:
+  level:
+    org.ggne.notification: DEBUG
+
 kafka:
   topics:
     mission-completed: mission.completed
