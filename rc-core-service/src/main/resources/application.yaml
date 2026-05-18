@@ -102,7 +102,7 @@ jwt:
 # ── 앱 커스텀 설정 ────────────────────────────────────────────────────────
 app:
   oauth2:
-    redirect-uri: http://localhost:8080/auth/callback
+    redirect-uri: http://localhost:3000/auth/callback
 
 # ── Kafka 토픽명 ──────────────────────────────────────────────────────────
 kafka:
