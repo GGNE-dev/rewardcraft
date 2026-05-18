@@ -34,6 +34,8 @@ public class OutboxRelay {
 
             // 블로킹 발행 — 브로커 확인 후에 published 마킹
             kafkaTemplate.send(outbox.getTopic(), outbox.getPartitionKey(), event).get();
+            log.info("Outbox 발행 완료: outboxId={}, topic={}, partitionKey={}",
+                    outbox.getId(), outbox.getTopic(), outbox.getPartitionKey());
 
             // 발행 성공
             new TransactionTemplate(transactionManager).execute(status -> {

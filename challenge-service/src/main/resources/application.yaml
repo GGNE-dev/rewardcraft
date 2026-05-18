@@ -16,7 +16,7 @@ spring:
     hibernate:
       ddl-auto: create
     defer-datasource-initialization: true  # Hibernate 스키마 생성 후 data.sql 실행
-    show-sql: true
+    show-sql: false  # System.out 직접 출력 방지 — SLF4J 경유를 위해 false
     properties:
       hibernate:
         format_sql: true
@@ -57,6 +57,7 @@ server:
 logging:
   level:
     org.ggne.challenge: DEBUG
+    org.hibernate.SQL: DEBUG  # show-sql 대신 SLF4J 경유 — TurboFilter가 outbox_events 쿼리 차단 가능
 
 kafka:
   topics:
