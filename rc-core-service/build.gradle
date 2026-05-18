@@ -10,7 +10,7 @@ ext {
 
 dependencies {
     // ── 공통 이벤트 모듈 ────────────────────────────────────────────────────
-    implementation project(':rewardcraft-events')
+    implementation project(':rc-events')
 
     // ── Web / 공통 ───────────────────────────────────────────────────────────
     implementation 'org.springframework.boot:spring-boot-starter-web'

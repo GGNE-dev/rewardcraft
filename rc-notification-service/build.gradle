@@ -2,11 +2,11 @@ plugins {
     id 'org.springframework.boot' version '3.5.14'
 }
 
-description = 'notification-service'
+description = 'rc-notification-service'
 
 dependencies {
     // ── 공통 이벤트 모듈 ────────────────────────────────────────────────────
-    implementation project(':rewardcraft-events')
+    implementation project(':rc-events')
 
     // ── Web ─────────────────────────────────────────────────────────────────
     implementation 'org.springframework.boot:spring-boot-starter-web'

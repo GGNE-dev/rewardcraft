@@ -2,14 +2,14 @@ plugins {
     id 'org.springframework.boot' version '3.5.14'
 }
 
-description = 'challenge-service'
+description = 'rc-challenge-service'
 
 ext {
     set('springCloudVersion', '2025.0.0')
 }
 
 dependencies {
-    implementation project(':rewardcraft-events')
+    implementation project(':rc-events')
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
