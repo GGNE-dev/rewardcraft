@@ -1,14 +1,19 @@
 package org.ggne.challenge.domain.mission.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.ggne.challenge.domain.mission.entity.MissionLog;
-import org.ggne.challenge.domain.mission.event.MissionEventProducer;
+import org.ggne.challenge.domain.mission.entity.OutboxEvent;
 import org.ggne.challenge.domain.mission.repository.MissionLogRepository;
+import org.ggne.challenge.domain.mission.repository.OutboxEventRepository;
 import org.ggne.challenge.domain.participation.entity.Participation;
 import org.ggne.challenge.domain.participation.repository.ParticipationRepository;
 import org.ggne.challenge.global.exception.BusinessException;
 import org.ggne.challenge.global.exception.ErrorCode;
 import org.ggne.rc.events.MissionCompletedEvent;
+import org.ggne.challenge.global.exception.SystemException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +26,12 @@ public class MissionService {
 
     private final MissionLogRepository missionLogRepository;
     private final ParticipationRepository participationRepository;
-    private final MissionEventProducer eventProducer;
+    private final OutboxEventRepository outboxRepository;
+    private final ObjectMapper objectMapper;
+
+    @Value("${kafka.topics.mission-completed}")
+    private String missionCompletedTopic;
+
 
     @Transactional
     public MissionLog complete(Long participationId, long points, String memo) {
@@ -32,14 +42,19 @@ public class MissionService {
 
         MissionLog savedLog = missionLogRepository.save(MissionLog.complete(participation, points, memo));
 
-        eventProducer.publishMissionCompleted(
-                MissionCompletedEvent.of(
-                        participation.getUserId(),
-                        participation.getChallenge().getId(),
-                        participation.getId(),
-                        points
-                )
+        MissionCompletedEvent missionCompletedEvent = MissionCompletedEvent.of(
+                participation.getUserId(),
+                participation.getChallenge().getId(),
+                participation.getId(),
+                points
         );
+
+        try {
+            String payload = objectMapper.writeValueAsString(missionCompletedEvent);
+            outboxRepository.save(OutboxEvent.of(missionCompletedTopic, missionCompletedEvent.userId().toString(), payload));
+        } catch (JsonProcessingException e) {
+            throw new SystemException("이벤트 직렬화 실패", e);
+        }
 
         return savedLog;
     }
