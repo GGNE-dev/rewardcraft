@@ -1,6 +1,6 @@
 rootProject.name = 'rewardcraft'
 
-include 'rewardcraft-api'
+include 'rc-core-service'
 include 'rewardcraft-events'
 include 'notification-service'
 include 'challenge-service'

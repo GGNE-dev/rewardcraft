@@ -8,13 +8,14 @@ services:
     ports:
       - "5433:5432"                    # 호스트:컨테이너 포트 포워딩. 로컬 5432(PostgreSQL 기본 포트)가 이미 사용 중이므로 5433 사용
     environment:
-      POSTGRES_DB: rewardcraft         # 자동 생성할 데이터베이스 이름
+      POSTGRES_DB: rc_core              # 자동 생성할 데이터베이스 이름
       POSTGRES_USER: rc_user           # 슈퍼유저 계정 (application.yaml의 datasource.username과 일치해야 함)
       POSTGRES_PASSWORD: rc_pass       # 비밀번호 (application.yaml의 datasource.password와 일치해야 함)
     volumes:
       - postgres_data:/var/lib/postgresql/data  # 컨테이너 재시작 후에도 데이터 유지 (named volume)
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql  # 최초 기동 시 rc_challenge 자동 생성
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U rc_user -d rewardcraft" ]  # DB가 실제로 연결 가능한지 확인
+      test: [ "CMD-SHELL", "pg_isready -U rc_user -d rc_core" ]  # DB가 실제로 연결 가능한지 확인
       interval: 10s   # 10초마다 체크
       timeout: 5s     # 5초 안에 응답 없으면 실패로 간주
       retries: 5      # 5번 연속 실패 시 unhealthy 상태로 전환
@@ -57,65 +58,9 @@ services:
     volumes:
       - kafka_data:/var/lib/kafka/data
 
-  # ── rewardcraft-api ──────────────────────────────────────────────────────
-  # Ch 06~: User, Reward 도메인 담당 (Challenge BC는 challenge-service로 분리)
-  rewardcraft-api:
-    build:
-      context: ./rewardcraft-api
-      dockerfile: Dockerfile
-    container_name: rc-api
-    ports:
-      - "8080:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      kafka:
-        condition: service_started
-      challenge-service:
-        condition: service_started
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/rewardcraft
-      SPRING_DATA_REDIS_HOST: redis
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      SERVICES_CHALLENGE_URL: http://challenge-service:8082
-
-  # ── challenge-service ─────────────────────────────────────────────────────
-  # Ch 06~: Challenge, Participation, MissionLog 도메인 담당
-  challenge-service:
-    build:
-      context: ./challenge-service
-      dockerfile: Dockerfile
-    container_name: rc-challenge
-    ports:
-      - "8082:8082"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      kafka:
-        condition: service_started
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/rewardcraft
-      SPRING_DATA_REDIS_HOST: redis
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-
-  # ── notification-service ──────────────────────────────────────────────────
-  # Ch 06~: Kafka 컨슈머 전용 알림 서비스
-  notification-service:
-    build:
-      context: ./notification-service
-      dockerfile: Dockerfile
-    container_name: rc-notification
-    ports:
-      - "8081:8081"
-    depends_on:
-      kafka:
-        condition: service_started
-    environment:
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  # ── Spring 서비스 ────────────────────────────────────────────────────────
+  # 로컬 개발: ./gradlew :rc-core-service:bootRun 등으로 직접 실행
+  # AWS 배포:  docker compose -f docker-compose.prod.yml up -d
 
 volumes:
   postgres_data:    # 도커가 관리하는 named volume. 컨테이너 삭제 후 재생성해도 데이터 보존

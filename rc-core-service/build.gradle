@@ -2,7 +2,7 @@ plugins {
     id 'org.springframework.boot' version '3.5.14'
 }
 
-description = 'rewardcraft-api'
+description = 'rc-core-service'
 
 ext {
     set('springCloudVersion', '2025.0.0')

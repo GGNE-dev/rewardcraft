@@ -1,6 +1,6 @@
 spring:
   application:
-    name: rewardcraft
+    name: rc-core-service
 
   profiles:
     active: local
@@ -11,7 +11,7 @@ spring:
 
   # ── DataSource ───────────────────────────────────────────────────────────
   datasource:
-    url: jdbc:postgresql://localhost:5433/rewardcraft
+    url: jdbc:postgresql://localhost:5433/rc_core
     username: rc_user
     password: rc_pass
     driver-class-name: org.postgresql.Driver
