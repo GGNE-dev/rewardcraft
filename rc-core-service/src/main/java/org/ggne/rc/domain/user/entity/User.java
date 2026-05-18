@@ -40,6 +40,10 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private UserRole role;
 
+    // 계정 정지 플래그 — 데이터 보존 방식의 소프트 밴 (물리 삭제 없음)
+    // columnDefinition으로 DB 스키마에 DEFAULT false 명시 — data.sql INSERT에 컬럼 생략 가능
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean banned = false;
 
     @Builder
     public User(String email, String nickname, OAuthProvider provider,
@@ -49,13 +53,16 @@ public class User extends BaseEntity {
         this.provider = provider;
         this.providerUserId = providerUserId;
         this.role = role;
+        this.banned = false;
     }
 
-    // setter 대신 의도를 드러내는 비즈니스 메서드
     public void updateNickname(String newNickname) {
         if (newNickname == null || newNickname.isBlank()) {
             throw new IllegalArgumentException("닉네임은 비워둘 수 없습니다.");
         }
         this.nickname = newNickname;
     }
+
+    public void ban()   { this.banned = true; }
+    public void unban() { this.banned = false; }
 }

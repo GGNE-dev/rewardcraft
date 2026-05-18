@@ -14,6 +14,11 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -28,6 +33,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // REST API + JWT 환경에서는 CSRF 불필요 (Authorization 헤더는 브라우저가 자동 전송 안 함)
                 .csrf(AbstractHttpConfigurer::disable)
                 // 세션을 만들지 않음 — JWT가 상태를 담당
@@ -43,6 +49,8 @@ public class SecurityConfig {
                 // 인가 규칙
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/error", "/login/**", "/oauth2/**", "/api/auth/**", "/api/dev/**").permitAll()
+                        // 리워드 목록은 비로그인 사용자도 조회 가능 (교환만 인증 필요)
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/rewards").permitAll()
                         // /api/admin/** 의 세부 권한은 각 컨트롤러의 @PreAuthorize가 담당
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
@@ -57,5 +65,22 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "https://rewardcraft.vercel.app"
+        ));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        // 쿠키(Refresh Token) 전송을 허용하기 위해 true로 설정
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }
