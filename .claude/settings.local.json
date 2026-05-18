@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(mkdir -p /mnt/c/study/rewardcraft/rewardcraft-frontend/lib)",
+      "Bash(mkdir -p /mnt/c/study/rewardcraft/rewardcraft-frontend/components/layout)",
+      "Bash(mkdir -p /mnt/c/study/rewardcraft/rewardcraft-frontend/components/ranking)",
+      "Bash(mkdir -p /mnt/c/study/rewardcraft/rewardcraft-frontend/components/ui)",
+      "Bash(mkdir -p /mnt/c/study/rewardcraft/rewardcraft-frontend/app/auth/callback)"
+    ]
+  }
+}
