@@ -15,11 +15,16 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
+    defer-datasource-initialization: true  # Hibernate 스키마 생성 후 data.sql 실행
     show-sql: true
     properties:
       hibernate:
         format_sql: true
     open-in-view: false
+
+  sql:
+    init:
+      mode: always  # PostgreSQL은 embedded DB가 아니라 기본값이 never이므로 명시 필요
 
   data:
     redis:
