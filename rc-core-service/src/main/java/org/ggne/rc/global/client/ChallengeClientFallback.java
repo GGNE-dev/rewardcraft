@@ -14,9 +14,18 @@ public class ChallengeClientFallback implements FallbackFactory<ChallengeClient>
 
     @Override
     public ChallengeClient create(Throwable cause) {
-        return userId -> {
-            log.error("challenge-service 호출 실패 (userId={}): {}", userId, cause.getMessage());
-            throw new RCBusinessException(ErrorCode.CHALLENGE_SERVICE_UNAVAILABLE);
+        return new ChallengeClient() {
+            @Override
+            public Long getUserTotalPoints(Long userId) {
+                log.error("challenge-service 호출 실패 (getUserTotalPoints, userId={}): {}", userId, cause.getMessage());
+                throw new RCBusinessException(ErrorCode.CHALLENGE_SERVICE_UNAVAILABLE);
+            }
+
+            @Override
+            public void deductPoints(Long userId, long points) {
+                log.error("challenge-service 호출 실패 (deductPoints, userId={}): {}", userId, cause.getMessage());
+                throw new RCBusinessException(ErrorCode.CHALLENGE_SERVICE_UNAVAILABLE);
+            }
         };
     }
 }

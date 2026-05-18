@@ -87,6 +87,11 @@ spring:
     openfeign:
       circuitbreaker:
         enabled: true
+      client:
+        config:
+          default:
+            connect-timeout: 2000   # TCP 연결 타임아웃 2초 — 미설정 시 hang 상태로 스레드 무한 점유
+            read-timeout: 3000      # 응답 읽기 타임아웃 3초
 
 # ── JWT ───────────────────────────────────────────────────────────────────
 jwt:

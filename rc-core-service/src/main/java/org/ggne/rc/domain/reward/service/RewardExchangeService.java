@@ -75,6 +75,9 @@ public class RewardExchangeService {
         RewardExchange exchange = RewardExchange.create(userId, rewardId);
         exchangeRepository.save(exchange);
 
+        // 포인트 차감 — 실패 시 예외가 던져지며 TransactionTemplate이 위의 재고 차감 + 교환 기록을 롤백
+        challengeClient.deductPoints(userId, reward.getRequiredPoints());
+
         return new RewardExchangeResult(exchange.getId(), reward.getRemainingStock());
     }
 

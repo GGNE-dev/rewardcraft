@@ -55,4 +55,25 @@ public class ParticipationService {
     public Long getUserTotalPoints(Long userId) {
         return participationRepository.sumTotalPointsByUserId(userId);
     }
+
+    // 리워드 교환 시 rc-core-service가 Feign으로 호출 — 보유 포인트에서 차감
+    @Transactional
+    public void deductPoints(Long userId, long points) {
+        List<Participation> participations = participationRepository.findByUserId(userId);
+        participations.sort((a, b) -> Long.compare(b.getTotalPoints(), a.getTotalPoints()));
+
+        long remaining = points;
+        for (Participation p : participations) {
+            if (remaining <= 0) break;
+
+            long deduct = Math.min(p.getTotalPoints(), remaining);
+
+            p.subtractPoints(deduct);
+            remaining -= deduct;
+        }
+
+        if (remaining > 0) {
+            throw new BusinessException(ErrorCode.INSUFFICIENT_POINTS);
+        }
+    }
 }

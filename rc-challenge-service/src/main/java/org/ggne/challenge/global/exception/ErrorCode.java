@@ -9,7 +9,8 @@ public enum ErrorCode {
 
     CHALLENGE_NOT_FOUND("CHL_001", "챌린지를 찾을 수 없습니다.", 404),
     PARTICIPATION_NOT_FOUND("PTC_001", "참여 정보를 찾을 수 없습니다.", 404),
-    ALREADY_PARTICIPATED("PTC_002", "이미 참여 중인 챌린지입니다.", 409);
+    ALREADY_PARTICIPATED("PTC_002", "이미 참여 중인 챌린지입니다.", 409),
+    INSUFFICIENT_POINTS("PTC_003", "포인트가 부족합니다.", 400);
 
     private final String code;
     private final String message;
