@@ -32,12 +32,20 @@ public class MissionLog extends BaseEntity {
     @Column(length = 500)
     private String memo;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MissionStatus status = MissionStatus.PENDING;
+
     public static MissionLog complete(Participation participation, long points, String memo) {
         MissionLog log = new MissionLog();
         log.participation = participation;
         log.completedAt = LocalDateTime.now();
         log.pointsEarned = points;
         log.memo = memo;
+        log.status = MissionStatus.PENDING;
         return log;
     }
+
+    public void approve() { this.status = MissionStatus.APPROVED; }
+    public void reject()  { this.status = MissionStatus.REJECTED; }
 }

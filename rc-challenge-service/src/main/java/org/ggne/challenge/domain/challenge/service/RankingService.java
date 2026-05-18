@@ -48,5 +48,9 @@ public class RankingService {
         return redisTemplate.opsForZSet().score(key, userId.toString());
     }
 
+    public void clearRanking(Long challengeId) {
+        redisTemplate.delete(String.format(RANKING_KEY, challengeId));
+    }
+
     public record RankingEntry(int rank, Long userId, long score) {}
 }
