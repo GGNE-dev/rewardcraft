@@ -3,6 +3,9 @@ import Cookies from 'js-cookie';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
+// ngrok 브라우저 경고 인터스티셜 우회 (모든 axios 요청에 적용)
+axios.defaults.headers.common['ngrok-skip-browser-warning'] = 'true';
+
 const api = axios.create({
   baseURL: API_URL,
   timeout: 10000,
