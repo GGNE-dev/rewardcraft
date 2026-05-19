@@ -36,7 +36,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         User user = userRepository.findByProviderAndProviderUserId(provider, userInfo.getProviderUserId())
                 .orElseGet(() -> userRepository.save(
                         User.builder()
-                                .email(userInfo.getEmail())
+                                // 카카오 비즈앱이 아닌 경우, 이메일 수집 불가 -> 임시 조치
+                                .email(userInfo.getEmail() != null ? userInfo.getEmail() : userInfo.getProviderUserId() + "@kakao.user")
                                 .nickname(userInfo.getNickname())
                                 .provider(provider)
                                 .providerUserId(userInfo.getProviderUserId())

@@ -40,7 +40,6 @@ spring:
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope:
               - profile_nickname
-              - account_email
             client-name: Kakao
           google:
             client-id: ${GOOGLE_CLIENT_ID}

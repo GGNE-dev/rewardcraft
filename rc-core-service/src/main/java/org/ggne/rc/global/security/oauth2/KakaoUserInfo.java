@@ -8,11 +8,21 @@ public class KakaoUserInfo implements OAuthUserInfo {
     private final Map<String, Object> kakaoAccount;
     private final Map<String, Object> profile;
 
+    /**
+     *   {
+     *     "id": 123456789,
+     *     "kakao_account": {
+     *       "profile": {          // profile은 kakao_account 안에 있음
+     *         "nickname": "홍길동"
+     *       }
+     *     }
+     *   }
+     */
     @SuppressWarnings("unchecked")
     public KakaoUserInfo(Map<String, Object> attributes) {
         this.attributes = attributes;
         this.kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-        this.profile = (Map<String, Object>) attributes.get("profile");
+        this.profile = (Map<String, Object>) kakaoAccount.get("profile");
     }
 
     @Override
