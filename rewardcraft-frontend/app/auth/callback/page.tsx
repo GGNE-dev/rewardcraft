@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Cookies from 'js-cookie';
 import api from '@/lib/api';
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -25,7 +25,6 @@ export default function AuthCallbackPage() {
       sameSite: 'strict',
     });
 
-    // 토큰 저장 후 사용자 정보 조회 → role/userId/nickname을 sessionStorage에 저장
     api.get('/api/users/me')
       .then(({ data }) => {
         const user = data.data;
@@ -44,5 +43,17 @@ export default function AuthCallbackPage() {
         <p className="text-gray-600">로그인 처리 중...</p>
       </div>
     </div>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin text-4xl">⏳</div>
+      </div>
+    }>
+      <AuthCallbackContent />
+    </Suspense>
   );
 }
