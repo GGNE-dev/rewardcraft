@@ -1,0 +1,92 @@
+name: RewardCraft CI/CD
+
+on:
+  push:
+    branches: [main]   # main 브랜치 push 시에만 실행
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_OWNER: ggne-dev
+  IMAGE_REPO: rewardcraft
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write   # GHCR 이미지 푸시 권한
+
+    steps:
+      # ── 1. 소스 체크아웃 ───────────────────────────────────────────────────
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # ── 2. JDK 21 세팅 ─────────────────────────────────────────────────────
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'   # ~/.gradle 캐시 → 의존성 재다운로드 방지
+
+      # ── 3. JAR 빌드 ────────────────────────────────────────────────────────
+      - name: Build JARs
+        run: |
+          chmod +x gradlew
+          ./gradlew :rc-core-service:bootJar --no-daemon -x test
+          ./gradlew :rc-challenge-service:bootJar --no-daemon -x test
+
+      # ── 4. GHCR 로그인 ─────────────────────────────────────────────────────
+      # GITHUB_TOKEN은 Actions가 자동 발급 — 별도 secret 불필요
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── 5. rc-core-service 이미지 빌드 + 푸시 ─────────────────────────────
+      - name: Build and push rc-core-service
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: rc-core-service/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPO }}/rc-core-service:latest
+
+      # ── 6. rc-challenge-service 이미지 빌드 + 푸시 ────────────────────────
+      - name: Build and push rc-challenge-service
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: rc-challenge-service/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPO }}/rc-challenge-service:latest
+
+      # ── 7. EC2 배포 ────────────────────────────────────────────────────────
+      # EC2에 SSH 접속 → GHCR에서 최신 이미지 pull → 컨테이너 재시작
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_PAT }}   # EC2가 GHCR pull 시 사용할 PAT
+          GIT_ACTOR: ${{ github.actor }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: GHCR_TOKEN,GIT_ACTOR
+          script: |
+            # GHCR 로그인 (EC2에서 private 패키지 pull)
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GIT_ACTOR" --password-stdin
+
+            # 최신 이미지 pull
+            cd ~/rewardcraft
+            docker compose -f docker-compose.prod.yml pull
+
+            # 무중단에 가까운 재시작 (순서: 인프라 → 앱)
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+
+            # 사용하지 않는 이전 이미지 정리
+            docker image prune -f
