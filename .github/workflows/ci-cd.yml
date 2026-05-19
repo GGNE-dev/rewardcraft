@@ -81,8 +81,11 @@ jobs:
             # GHCR 로그인 (EC2에서 private 패키지 pull)
             echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GIT_ACTOR" --password-stdin
 
-            # 최신 이미지 pull
+            # 최신 docker-compose.prod.yml 반영
             cd ~/rewardcraft
+            git pull origin main
+
+            # 최신 이미지 pull
             docker compose -f docker-compose.prod.yml pull
 
             # 무중단에 가까운 재시작 (순서: 인프라 → 앱)
