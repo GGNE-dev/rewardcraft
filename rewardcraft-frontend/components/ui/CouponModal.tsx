@@ -82,7 +82,7 @@ export default function CouponModal({ exchangeId, rewardName, exchangedAt, onClo
               xmlns="http://www.w3.org/2000/svg"
             >
               {(() => {
-                const rects = [];
+                const rects: React.ReactElement[] = [];
                 let x = 0;
                 bars.forEach((w, i) => {
                   if (i % 2 === 0) {
