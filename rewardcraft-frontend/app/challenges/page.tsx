@@ -15,9 +15,13 @@ export default function ChallengesPage() {
   const [participations, setParticipations] = useState<Participation[]>([]);
   const [loading, setLoading] = useState(true);
   const [joiningId, setJoiningId] = useState<number | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userId, setUserId] = useState(0);
 
-  const userId = typeof window !== 'undefined' ? Number(sessionStorage.getItem('userId')) : 0;
-  const isLoggedIn = typeof window !== 'undefined' ? !!sessionStorage.getItem('accessToken') : false;
+  useEffect(() => {
+    setIsLoggedIn(!!sessionStorage.getItem('accessToken'));
+    setUserId(Number(sessionStorage.getItem('userId')));
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {

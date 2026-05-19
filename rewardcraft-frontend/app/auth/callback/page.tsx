@@ -28,9 +28,10 @@ export default function AuthCallbackPage() {
     // 토큰 저장 후 사용자 정보 조회 → role/userId/nickname을 sessionStorage에 저장
     api.get('/api/users/me')
       .then(({ data }) => {
-        sessionStorage.setItem('userRole', data.role);
-        sessionStorage.setItem('userId', String(data.id));
-        sessionStorage.setItem('nickname', data.nickname);
+        const user = data.data;
+        sessionStorage.setItem('userRole', user.role);
+        sessionStorage.setItem('userId', String(user.id));
+        sessionStorage.setItem('nickname', user.nickname);
         router.push('/ranking');
       })
       .catch(() => router.push('/'));
