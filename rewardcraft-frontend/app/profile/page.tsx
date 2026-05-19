@@ -2,13 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import { User, Participation, Challenge } from '@/lib/types';
 import CouponModal from '@/components/ui/CouponModal';
-
-const CHALLENGE_API = process.env.NEXT_PUBLIC_CHALLENGE_API_URL || 'http://localhost:8082';
 
 interface ExchangeRecord {
   exchangeId: number;
@@ -56,11 +53,11 @@ export default function ProfilePage() {
       .catch(() => {});
 
     if (userId) {
-      axios.get(`${CHALLENGE_API}/api/participations?userId=${userId}`)
+      api.get(`/api/participations?userId=${userId}`)
         .then(res => setParticipations(res.data.data ?? []))
         .catch(() => {});
 
-      axios.get(`${CHALLENGE_API}/api/challenges`)
+      api.get('/api/challenges')
         .then(res => setChallenges(res.data.data ?? []))
         .catch(() => {});
     }

@@ -1,14 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import api from '@/lib/api';
 import { RankingEntry } from '@/lib/types';
 import RankingTable from '@/components/ranking/RankingTable';
 import RankingChart from '@/components/ranking/RankingChart';
 import DevNote from '@/components/ui/DevNote';
-
-// 랭킹 API는 rc-challenge-service(8082)에 있음
-const CHALLENGE_API = process.env.NEXT_PUBLIC_CHALLENGE_API_URL || 'http://localhost:8082';
 
 const CHALLENGES = [
   { id: 1, title: '30일 운동' },
@@ -31,15 +28,15 @@ export default function RankingPage() {
   const fetchRanking = useCallback(async () => {
     try {
       // 실제 응답: ApiResponse<List<RankingEntry>> → data.data가 배열
-      const rankRes = await axios.get(
-        `${CHALLENGE_API}/api/challenges/${selectedChallenge}/ranking/top?limit=20`
+      const rankRes = await api.get(
+        `/api/challenges/${selectedChallenge}/ranking/top?limit=20`
       );
       setRankings(rankRes.data.data ?? []);
 
       // 내 순위: userId를 query param으로 전달
       if (myUserId) {
-        const myRankRes = await axios.get(
-          `${CHALLENGE_API}/api/challenges/${selectedChallenge}/ranking/me?userId=${myUserId}`
+        const myRankRes = await api.get(
+          `/api/challenges/${selectedChallenge}/ranking/me?userId=${myUserId}`
         );
         setMyRank(myRankRes.data.data?.rank ?? null);
       }

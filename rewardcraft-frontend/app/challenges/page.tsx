@@ -1,11 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { Challenge, Participation, MissionLog } from '@/lib/types';
-
-const CHALLENGE_API = process.env.NEXT_PUBLIC_CHALLENGE_API_URL || 'http://localhost:8082';
 
 // 미션 완료 신청 시 선택 가능한 포인트 옵션
 const POINT_OPTIONS = [10, 30, 50, 100];
@@ -25,11 +23,11 @@ export default function ChallengesPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const challengeRes = await axios.get(`${CHALLENGE_API}/api/challenges`);
+      const challengeRes = await api.get('/api/challenges');
       setChallenges(challengeRes.data.data ?? []);
 
       if (userId) {
-        const partRes = await axios.get(`${CHALLENGE_API}/api/participations?userId=${userId}`);
+        const partRes = await api.get(`/api/participations?userId=${userId}`);
         setParticipations(partRes.data.data ?? []);
       }
     } catch {
@@ -50,7 +48,7 @@ export default function ChallengesPage() {
     }
     setJoiningId(challengeId);
     try {
-      const res = await axios.post(`${CHALLENGE_API}/api/participations`, { userId, challengeId });
+      const res = await api.post('/api/participations', { userId, challengeId });
       const newPart: Participation = res.data.data;
       setParticipations((prev) => [...prev, newPart]);
       toast.success('챌린지에 참여했습니다! 🎉');
@@ -149,8 +147,8 @@ function ChallengeCard({
 
     setCompleting(true);
     try {
-      const res = await axios.post(
-        `${CHALLENGE_API}/api/participations/${participation.id}/missions`,
+      const res = await api.post(
+        `/api/participations/${participation.id}/missions`,
         { points: selectedPoints, memo: missionMemo || null }
       );
       const log: MissionLog = res.data.data;
@@ -171,8 +169,8 @@ function ChallengeCard({
     if (!participation) return;
     setLoadingHistory(true);
     try {
-      const res = await axios.get(
-        `${CHALLENGE_API}/api/participations/${participation.id}/missions`
+      const res = await api.get(
+        `/api/participations/${participation.id}/missions`
       );
       setMissions(res.data.data ?? []);
       setShowHistory(true);
