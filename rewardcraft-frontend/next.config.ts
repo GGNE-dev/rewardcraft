@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  turbopack: {},  // Next.js 16 기본 번들러 (Vercel 빌드용)
   webpack: (config, { dev }) => {
     if (dev) {
       config.watchOptions = {
