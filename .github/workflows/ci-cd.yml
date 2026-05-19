@@ -2,7 +2,12 @@ name: RewardCraft CI/CD
 
 on:
   push:
-    branches: [main]   # main 브랜치 push 시에만 실행
+    branches: [main]
+    paths:             # 아래 경로 변경 시에만 CI/CD 실행 (프론트 변경은 Vercel이 독립 배포)
+      - 'rc-core-service/**'
+      - 'rc-challenge-service/**'
+      - 'docker-compose.prod.yml'
+      - '.github/workflows/**'
 
 env:
   REGISTRY: ghcr.io
