@@ -1,34 +1,15 @@
 services:
 
-  # ── PostgreSQL ────────────────────────────────────────────────────────────
-  postgres:
-    image: postgres:16-alpine
-    container_name: rc-postgres
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: rc_core
-      POSTGRES_USER: rc_user
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U rc_user -d rc_core" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # ── Redis ─────────────────────────────────────────────────────────────────
+  # ElastiCache 대신 EC2 내 Docker로 실행 (비용 절감)
   redis:
     image: redis:7-alpine
     container_name: rc-redis
-    ports:
-      - "6379:6379"
+    restart: unless-stopped
     volumes:
       - redis_data:/data
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -37,8 +18,7 @@ services:
   kafka:
     image: apache/kafka:3.9.0
     container_name: rc-kafka
-    ports:
-      - "9092:9092"
+    restart: unless-stopped
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
@@ -52,69 +32,53 @@ services:
     volumes:
       - kafka_data:/var/lib/kafka/data
 
-  # ── rc-core-service ───────────────────────────────────────────────────────
+  # ── rc-core-service ────────────────────────────────────────────────────────
+  # GitHub Actions가 빌드해서 GHCR에 푸시한 이미지를 pull해서 실행
   rc-core-service:
-    build:
-      context: ./rc-core-service
-      dockerfile: Dockerfile
+    image: ghcr.io/ggne-dev/rewardcraft/rc-core-service:latest
     container_name: rc-core
+    restart: unless-stopped
     ports:
       - "8080:8080"
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
       kafka:
         condition: service_started
-      challenge-service:
-        condition: service_started
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/rc_core
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       SPRING_DATA_REDIS_HOST: redis
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      SERVICES_CHALLENGE_URL: http://challenge-service:8082
+      FRONTEND_URL: ${FRONTEND_URL}
       JWT_SECRET: ${JWT_SECRET}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
       KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET}
 
-  # ── challenge-service ─────────────────────────────────────────────────────
-  challenge-service:
-    build:
-      context: ./challenge-service
-      dockerfile: Dockerfile
+  # ── rc-challenge-service ───────────────────────────────────────────────────
+  rc-challenge-service:
+    image: ghcr.io/ggne-dev/rewardcraft/rc-challenge-service:latest
     container_name: rc-challenge
+    restart: unless-stopped
     ports:
       - "8082:8082"
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
       kafka:
         condition: service_started
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/rc_challenge
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: ${CHALLENGE_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       SPRING_DATA_REDIS_HOST: redis
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
-  # ── notification-service ──────────────────────────────────────────────────
-  notification-service:
-    build:
-      context: ./notification-service
-      dockerfile: Dockerfile
-    container_name: rc-notification
-    ports:
-      - "8081:8081"
-    depends_on:
-      kafka:
-        condition: service_started
-    environment:
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-
 volumes:
-  postgres_data:
   redis_data:
   kafka_data:

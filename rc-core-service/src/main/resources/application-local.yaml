@@ -5,3 +5,11 @@ spring:
   sql:
     init:
       mode: always   # PostgreSQL은 embedded DB가 아니라 기본값이 never이므로 명시 필요
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: 0ca30fd4d9cb8f401de7eda8d6c67072
+            client-secret: xTZoeGGQCrfHHYH8z1bH1Aprfs1JziLu
